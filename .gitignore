@@ -1,0 +1,58 @@
+# Build Folders (C#)
+bin/
+obj/
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+*.config
+*.csv
+*.js
+*.css
+*.html
+*.map
+*.ts
+*.log
+*.sql
+*.swp
+*.userosscache
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+
+# Rider (JetBrains IDE)
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# ASP.NET
+appsettings*.json   # Exclude all appsettings files to protect sensitive information
+secret.json         # Secret configuration file
+
+# Entity Framework Migrations
+Migrations/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Log Files
+*.log
+
+# Other Ignored Files
+*.lock
+*.temp
+*.tmp
+*.bak
+*.old
