@@ -16,7 +16,7 @@ string GetPostgresConnectionString(string databaseUrl)
 }
 
 var databaseUrl = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DATABASE_URL environment variable is missing.");
+                ?? throw new InvalidOperationException("DATABASE_URL variable is missing.");
 string connectionString = GetPostgresConnectionString(databaseUrl);
 
 builder.Services.AddControllers();
@@ -28,6 +28,39 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+//    // Проверяем, есть ли уже данные в таблице User
+//    if (!dbContext.Users.Any())
+//    {
+//        dbContext.Users.Add(new User
+//        {
+//            Nickname = "TestUser1",
+//            Email = "testuser1@example.com",
+//            Password = "testpassword1",
+//            Photo = "base64_encoded_string",
+//            Description = "Test user description",
+//            Country = "Ukraine"
+//        });
+
+//        dbContext.Users.Add(new User
+//        {
+//            Nickname = "TestUser2",
+//            Email = "testuser2@example.com",
+//            Password = "testpassword2",
+//            Photo = "base64_encoded_string",
+//            Description = "Another test user description",
+//            Country = "USA"
+//        });
+
+//        // Сохраняем изменения в базе данных
+//        dbContext.SaveChanges();
+//    }
+//}
+
 
 //вывод информации для проверки подключения
 using (var scope = app.Services.CreateScope())

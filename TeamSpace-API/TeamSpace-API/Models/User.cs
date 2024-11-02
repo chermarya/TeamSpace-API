@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using TeamSpace_API.Data;
 
-namespace TeamSpace_API.Data;
+namespace TeamSpace_API.Models;
 
 public class User
 {
@@ -27,18 +26,4 @@ public class User
 
     //один пользователь может иметь несколько тегов
     public List<Tag> Tags { get; set; }
-}
-
-public class Tag
-{
-    [Key]
-    public int TagId { get; set; }
-
-    [Required]
-    public string Title { get; set; }
-
-    public int UserId { get; set; }
-
-    [ForeignKey("UserId")]
-    public User User { get; set; }
 }

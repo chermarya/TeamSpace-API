@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TeamSpace_API.Models;
 
 namespace TeamSpace_API.Data;
 
