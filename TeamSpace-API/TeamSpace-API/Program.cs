@@ -1,6 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TeamSpace_API.Data;
+using TeamSpace_API.Models;
+using System.Text.Json;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using BCrypt.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,11 +29,25 @@ var databaseUrl = builder.Configuration.GetConnectionString("DefaultConnection")
 string connectionString = GetPostgresConnectionString(databaseUrl);
 
 builder.Services.AddControllers();
-builder.Services.AddAuthorization();  
-
+builder.Services.AddAuthorization();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "TeameSpaceApp",
+            ValidAudience = "TeameSpaceUsers",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TeameSpaceSecretKey1234567890asdffpoi"))
+        };
+    });
 
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
@@ -61,13 +84,36 @@ var app = builder.Build();
 //    }
 //}
 
-
-//вывод информации для проверки подключения
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     Console.WriteLine($"Database Connection String: {connectionString}");
     Console.WriteLine($"Database connection successful: {dbContext.Database.CanConnect()}");
+}
+
+string GenerateJwtToken(User user)
+{
+    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TeameSpaceSecretKey1234567890asdffpoi"));
+    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+    var claims = new[]
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+
+    var token = new JwtSecurityToken(
+        issuer: "TeameSpaceApp",
+        audience: "TeameSpaceUsers",
+        claims: claims,
+        expires: DateTime.Now.AddMinutes(120),
+        signingCredentials: credentials
+    );
+
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
 }
 
 if (app.Environment.IsDevelopment())
@@ -78,6 +124,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
