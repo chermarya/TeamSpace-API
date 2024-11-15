@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using BCrypt.Net;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 string GetPostgresConnectionString(string databaseUrl)
@@ -31,6 +32,7 @@ string connectionString = GetPostgresConnectionString(databaseUrl);
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -48,6 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TeameSpaceSecretKey1234567890asdffpoi"))
         };
     });
+
 
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
@@ -84,6 +87,7 @@ var app = builder.Build();
 //    }
 //}
 
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -91,18 +95,33 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine($"Database connection successful: {dbContext.Database.CanConnect()}");
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
+}
+
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseDeveloperExceptionPage();
+app.MapControllers();
+app.Run();
+
 string GenerateJwtToken(User user)
 {
     var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("TeameSpaceSecretKey1234567890asdffpoi"));
     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
 
     var claims = new[]
     {
         new Claim(JwtRegisteredClaimNames.Sub, user.Email),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
     };
-
 
     var token = new JwtSecurityToken(
         issuer: "TeameSpaceApp",
@@ -112,19 +131,5 @@ string GenerateJwtToken(User user)
         signingCredentials: credentials
     );
 
-
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
